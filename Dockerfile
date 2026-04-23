@@ -21,9 +21,6 @@ EXPOSE 3000
 RUN mkdir -p /app/uploads/atestados && \
     mkdir -p /app/logs
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "const port = process.env.PORT || 3000; require('http').get(\"http://localhost:\" + port, (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
 # Iniciar servidor
 CMD ["npm", "run", "start"]
