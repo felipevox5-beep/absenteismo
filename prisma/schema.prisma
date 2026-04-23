@@ -47,8 +47,10 @@ model Employee {
   statistics       EmployeeStatistics?
   recurrenceAlerts RecurrenceAlert[]
   systemUser       SystemUser?
-  createdLogs      AuditLog[]
-  historyActions   AbsenceHistory[]
+  
+  // Relations to AbsenceHistory
+  historyActions   AbsenceHistory[]         @relation("EmployeeHistory")
+  changedHistories AbsenceHistory[]         @relation("ChangedBy")
 
   @@index([sector])
   @@index([status])
@@ -137,17 +139,12 @@ model AbsenceHistory {
   changedAt DateTime @default(now()) @map("changed_at")
 
   absence    Absence?  @relation(fields: [absenceId], references: [id], onDelete: Cascade)
-  employee   Employee? @relation(fields: [employeeId], references: [id])
+  employee   Employee? @relation("EmployeeHistory", fields: [employeeId], references: [id])
   changedByEmployee Employee? @relation("ChangedBy", fields: [changedBy], references: [id])
 
   @@index([absenceId])
   @@index([employeeId])
   @@map("absence_history")
-}
-
-model Employee_ChangedBy {
-  id Int @id
-  @@map("absence_history_changed_by")
 }
 
 // =====================================================
@@ -212,7 +209,31 @@ model RecurrenceAlert {
 }
 
 // =====================================================
-// USUÁRIOS DO SISTEMA
+// USUÁRIOS DO SISTEMA (DUMP COMPATIBILIDADE)
+// =====================================================
+model User {
+  id            String    @id @default(uuid())
+  uid           String    @unique
+  displayName   String?
+  email         String    @unique
+  photoURL      String?
+  role          String    @default("Usuário Comum")
+  password      String?
+  company       String?
+  companies     String[]
+  units         String[]
+  sectors       String[]
+  locations     String[]
+  blocked       Boolean   @default(false)
+  blockedReason String?
+  status        String    @default("Pendente")
+  createdAt     DateTime  @default(now())
+
+  @@map("User")
+}
+
+// =====================================================
+// USUÁRIOS DO SISTEMA (NATIVO)
 // =====================================================
 model SystemUser {
   id        Int     @id @default(autoincrement())
