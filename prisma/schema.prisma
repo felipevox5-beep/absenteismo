@@ -1,0 +1,271 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================
+// SETORES
+// =====================================================
+model Sector {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(100)
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  employees Employee[]
+
+  @@map("sectors")
+}
+
+// =====================================================
+// FUNCIONÁRIOS
+// =====================================================
+model Employee {
+  id        Int     @id @default(autoincrement())
+  name      String  @db.VarChar(150)
+  email     String? @db.VarChar(150)
+  sectorId  Int?    @map("sector_id")
+  sector    String? @db.VarChar(100)
+  status    String  @default("ativo") @db.VarChar(50)
+  hireDate  DateTime? @map("hire_date") @db.Date
+  phone     String? @db.VarChar(20)
+  document  String? @unique @db.VarChar(20)
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sectorRel        Sector?                  @relation(fields: [sectorId], references: [id], onDelete: SetNull)
+  absences         Absence[]
+  createdAbsences  Absence[]                @relation("CreatedBy")
+  statistics       EmployeeStatistics?
+  recurrenceAlerts RecurrenceAlert[]
+  systemUser       SystemUser?
+  createdLogs      AuditLog[]
+  historyActions   AbsenceHistory[]
+
+  @@index([sector])
+  @@index([status])
+  @@index([document])
+  @@map("employees")
+}
+
+// =====================================================
+// TIPOS DE AUSÊNCIA
+// =====================================================
+model AbsenceType {
+  id                    Int     @id @default(autoincrement())
+  typeName              String  @unique @db.VarChar(100) @map("type_name")
+  description           String?
+  requiresJustification Boolean @default(false) @map("requires_justification")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  absences Absence[]
+
+  @@map("absence_types")
+}
+
+// =====================================================
+// CIDs (Classificação Internacional de Doenças)
+// =====================================================
+model CID {
+  id          Int     @id @default(autoincrement())
+  code        String  @unique @db.VarChar(10)
+  description String? @db.VarChar(255)
+  active      Boolean @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  absences Absence[]
+
+  @@index([code])
+  @@map("cids")
+}
+
+// =====================================================
+// AUSÊNCIAS
+// =====================================================
+model Absence {
+  id                 BigInt   @id @default(autoincrement())
+  employeeId         Int      @map("employee_id")
+  absenceTypeId      Int?     @map("absence_type_id")
+  type               String?  @db.VarChar(50)
+  reason             String?
+  cidId              Int?     @map("cid_id")
+  cid                String?  @db.VarChar(20)
+  date               DateTime @db.Date
+  endDate            DateTime? @map("end_date") @db.Date
+  durationDays       Int?     @map("duration_days")
+  atestadoFilename   String?  @db.VarChar(255) @map("atestado_filename")
+  atestadoFilePath   String?  @db.VarChar(500) @map("atestado_file_path")
+  atestadoData       Bytes?   @map("atestado_data")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  createdByEmployeeId Int?    @map("created_by")
+  status             String   @default("registrado") @db.VarChar(50)
+
+  employee         Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  absenceType      AbsenceType?    @relation(fields: [absenceTypeId], references: [id])
+  cidRecord        CID?            @relation(fields: [cidId], references: [id])
+  createdByEmployee Employee?      @relation("CreatedBy", fields: [createdByEmployeeId], references: [id])
+  history          AbsenceHistory[]
+
+  @@index([employeeId])
+  @@index([date])
+  @@index([type])
+  @@index([cid])
+  @@index([status])
+  @@index([createdAt])
+  @@map("absences")
+}
+
+// =====================================================
+// HISTÓRICO DE AUSÊNCIAS
+// =====================================================
+model AbsenceHistory {
+  id        Int     @id @default(autoincrement())
+  absenceId BigInt? @map("absence_id")
+  employeeId Int?   @map("employee_id")
+  action    String? @db.VarChar(100)
+  details   String?
+  changedBy Int?    @map("changed_by")
+  changedAt DateTime @default(now()) @map("changed_at")
+
+  absence    Absence?  @relation(fields: [absenceId], references: [id], onDelete: Cascade)
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+  changedByEmployee Employee? @relation("ChangedBy", fields: [changedBy], references: [id])
+
+  @@index([absenceId])
+  @@index([employeeId])
+  @@map("absence_history")
+}
+
+model Employee_ChangedBy {
+  id Int @id
+  @@map("absence_history_changed_by")
+}
+
+// =====================================================
+// ESTATÍSTICAS POR FUNCIONÁRIO
+// =====================================================
+model EmployeeStatistics {
+  id                    Int     @id @default(autoincrement())
+  employeeId            Int     @unique @map("employee_id")
+  totalAbsences         Int     @default(0) @map("total_absences")
+  atestadosCount        Int     @default(0) @map("atestados_count")
+  motivosPessoaisCount  Int     @default(0) @map("motivos_pessoais_count")
+  faltasCount           Int     @default(0) @map("faltas_count")
+  atrasosCount          Int     @default(0) @map("atrasos_count")
+  totalDaysAbsent       Int     @default(0) @map("total_days_absent")
+  lastAbsenceDate       DateTime? @map("last_absence_date") @db.Date
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@map("employee_statistics")
+}
+
+// =====================================================
+// RESUMO MENSAL DE ABSENTEÍSMO
+// =====================================================
+model MonthlyAbsenceReport {
+  id             Int     @id @default(autoincrement())
+  month          DateTime @db.Date
+  employeeId     Int     @map("employee_id")
+  totalAbsences  Int     @default(0) @map("total_absences")
+  totalDays      Int     @default(0) @map("total_days")
+  mostCommonCid  String? @db.VarChar(20) @map("most_common_cid")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([month, employeeId])
+  @@index([month])
+  @@index([employeeId])
+  @@map("monthly_absence_report")
+}
+
+// =====================================================
+// ALERTAS E RECORRÊNCIAS
+// =====================================================
+model RecurrenceAlert {
+  id              Int     @id @default(autoincrement())
+  employeeId      Int     @map("employee_id")
+  cid             String? @db.VarChar(20)
+  occurrenceCount Int     @default(0) @map("occurrence_count")
+  firstOccurrence DateTime? @map("first_occurrence") @db.Date
+  lastOccurrence  DateTime? @map("last_occurrence") @db.Date
+  status          String  @default("ativo") @db.VarChar(50)
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@index([cid])
+  @@map("recurrence_alerts")
+}
+
+// =====================================================
+// USUÁRIOS DO SISTEMA
+// =====================================================
+model SystemUser {
+  id        Int     @id @default(autoincrement())
+  username  String  @unique @db.VarChar(100)
+  email     String  @unique @db.VarChar(150)
+  passwordHash String? @db.VarChar(255) @map("password_hash")
+  employeeId Int?   @unique @map("employee_id")
+  role      String  @default("user") @db.VarChar(50)
+  status    String  @default("ativo") @db.VarChar(50)
+  lastLogin DateTime? @map("last_login")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  employee Employee? @relation(fields: [employeeId], references: [id])
+  auditLogs AuditLog[]
+
+  @@index([username])
+  @@index([email])
+  @@map("system_users")
+}
+
+// =====================================================
+// LOGS DE AUDITORIA
+// =====================================================
+model AuditLog {
+  id        BigInt   @id @default(autoincrement())
+  userId    Int?     @map("user_id")
+  action    String   @db.VarChar(100)
+  tableName String?  @db.VarChar(100) @map("table_name")
+  recordId  Int?     @map("record_id")
+  oldValues Json?    @map("old_values")
+  newValues Json?    @map("new_values")
+  ipAddress String?  @db.VarChar(50) @map("ip_address")
+  timestamp DateTime @default(now())
+
+  user SystemUser? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([tableName])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+// =====================================================
+// CONFIGURAÇÕES DO SISTEMA
+// =====================================================
+model SystemConfig {
+  id          Int     @id @default(autoincrement())
+  configKey   String  @unique @db.VarChar(100) @map("config_key")
+  configValue String? @map("config_value")
+  description String?
+  dataType    String  @default("text") @db.VarChar(50) @map("data_type")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_config")
+}

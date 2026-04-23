@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "imageName": "controleabsenteismo:latest",
+  "ports": [3000],
+  "volumes": ["/app/uploads", "/app/logs"],
+  "environment": {
+    "NODE_ENV": "production"
+  },
+  "deploymentStrategy": "rolling-update",
+  "services": [],
+  "preDeploymentScript": "",
+  "postDeploymentScript": "",
+  "preDeploymentScriptDescription": "Executar migrations (se necessário)",
+  "postDeploymentScriptDescription": "Scripts pós-deployment (se necessário)",
+  "SampleRepo": "https://github.com/felipevox5-beep/controleabsenteismo.git"
+}
