@@ -5,8 +5,8 @@ WORKDIR /app
 # Copiar arquivos de dependências
 COPY package*.json ./
 
-# Instalar dependências
-RUN npm ci --omit=dev
+# Instalar todas as dependências (necessário para o build do Vite)
+RUN npm install
 
 # Copiar código fonte
 COPY . .
@@ -26,4 +26,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
 # Iniciar servidor
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]
