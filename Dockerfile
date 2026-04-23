@@ -13,6 +13,9 @@ RUN npm install
 # Copiar código fonte
 COPY . .
 
+# Gerar Prisma Client
+RUN npx prisma generate
+
 # Build da aplicação Vite
 RUN npm run build
 
