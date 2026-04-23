@@ -99,16 +99,10 @@ function LoginView({ onLogin }: { onLogin: (token: string, user: any) => void })
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[420px] bg-[#1A1D23]/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative z-10"
+        className="w-full max-w-[420px] bg-white border border-slate-200 rounded-3xl p-10 shadow-[0_30px_60px_rgba(0,0,0,0.3)] relative z-10"
       >
-        <div className="flex flex-col items-center mb-8">
-          <img src="/logos/gestorprologo.png" alt="Gestor Pro" className="h-16 mb-6 drop-shadow-[0_0_15px_rgba(34,197,94,0.3)]" />
-          <div className="flex items-center gap-2 text-green-500 mb-1">
-            <Activity size={14} className="animate-pulse" />
-            <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">Security Module // Access Control</span>
-          </div>
-          <h1 className="text-2xl font-bold tracking-tighter text-white">AUTENTICAÇÃO</h1>
-          <p className="text-slate-500 text-xs font-mono uppercase tracking-wider mt-1">Gestor Pro System v2.0</p>
+        <div className="flex flex-col items-center mb-10">
+          <img src="/logos/gestorprologo.png" alt="Gestor Pro" className="h-20" />
         </div>
 
         {error && (
@@ -122,26 +116,26 @@ function LoginView({ onLogin }: { onLogin: (token: string, user: any) => void })
           </motion.div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-              <Mail size={12} className="text-slate-600" />
-              Email do Usuário
+            <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <Mail size={12} className="text-slate-300" />
+              Email
             </label>
             <input 
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="admin@empresa.com"
-              className="w-full bg-[#0F1115] border border-slate-800 rounded-xl p-4 text-slate-100 font-mono text-sm outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all placeholder:text-slate-700"
+              placeholder="seu@email.com"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-900 font-mono text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/10 transition-all placeholder:text-slate-300"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-              <Lock size={12} className="text-slate-600" />
-              Senha de Acesso
+            <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <Lock size={12} className="text-slate-300" />
+              Senha
             </label>
             <div className="relative">
               <input 
@@ -150,12 +144,12 @@ function LoginView({ onLogin }: { onLogin: (token: string, user: any) => void })
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full bg-[#0F1115] border border-slate-800 rounded-xl p-4 text-slate-100 font-mono text-sm outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all placeholder:text-slate-700"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-900 font-mono text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/10 transition-all placeholder:text-slate-300"
               />
               <button 
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-400 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
@@ -165,14 +159,14 @@ function LoginView({ onLogin }: { onLogin: (token: string, user: any) => void })
           <button 
             type="submit"
             disabled={isLoading}
-            className="w-full bg-green-500 hover:bg-green-400 disabled:bg-slate-800 disabled:text-slate-600 text-slate-950 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(34,197,94,0.2)] mt-8"
+            className="w-full bg-slate-900 hover:bg-black disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg mt-8"
           >
             {isLoading ? (
-              <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : (
               <>
                 <ShieldCheck size={20} />
-                <span>INICIAR SESSÃO</span>
+                <span>ENTRAR NO SISTEMA</span>
               </>
             )}
           </button>
