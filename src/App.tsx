@@ -750,56 +750,51 @@ export default function App() {
         </AnimatePresence>
       </div>
 
-      <header className="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-8">
-        <div className="flex items-center gap-6">
-          <img src="/logos/gestorprologo.png" alt="Logo" className="h-12 drop-shadow-[0_0_10px_rgba(34,197,94,0.2)]" />
-          <div>
+      <header className="max-w-7xl mx-auto mb-10 border-b border-slate-800 pb-8 px-2 md:px-4">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Lado Esquerdo: Logo */}
+          <div className="flex-shrink-0">
+            <img src="/logos/gestorprologo.png" alt="Logo" className="h-10 md:h-12 drop-shadow-[0_0_10px_rgba(34,197,94,0.2)]" />
           </div>
-        </div>
 
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-3 mr-4 px-4 py-2 bg-slate-900/50 border border-slate-800 rounded-lg">
-             <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
-                <UserIcon size={16} />
-             </div>
-             <div className="flex flex-col">
-                <span className="text-[10px] text-white font-bold uppercase truncate max-w-[120px]">{user?.name || user?.email}</span>
-                <span className="text-[8px] text-slate-500 font-mono uppercase">{user?.role || 'Usuário'}</span>
-             </div>
-             <button 
+          {/* Centro: Botões de Ação */}
+          <div className="flex flex-wrap justify-center gap-3 md:gap-4 flex-grow">
+            <button 
+              onClick={() => setIsInsightsOpen(true)}
+              className="bg-transparent border border-orange-500/50 hover:bg-orange-500/10 text-orange-500 px-4 md:px-6 py-2.5 md:py-3 rounded-md flex items-center gap-2 font-mono text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95"
+            >
+              <TrendingUp size={18} />
+              <span className="hidden sm:inline">[ Insights ]</span>
+            </button>
+            
+            <button 
+              onClick={() => setIsEmployeeModalOpen(true)}
+              className="bg-transparent border border-blue-500/50 hover:bg-blue-500/10 text-blue-500 px-4 md:px-6 py-2.5 md:py-3 rounded-md flex items-center gap-2 font-mono text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95"
+            >
+              <Users size={18} />
+              <span className="hidden sm:inline">[ + Colaborador ]</span>
+            </button>
+
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="bg-transparent border border-green-500/50 hover:bg-green-500/10 text-green-500 px-4 md:px-6 py-2.5 md:py-3 rounded-md flex items-center gap-2 font-mono text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95 shadow-[0_0_15px_rgba(34,197,94,0.1)]"
+              id="btn-registar-falta"
+            >
+              <Plus size={18} />
+              <span className="hidden sm:inline">[ + Entrada ]</span>
+            </button>
+          </div>
+
+          {/* Lado Direito: Botão Sair */}
+          <div className="flex-shrink-0">
+            <button 
               onClick={handleLogout}
-              className="ml-2 p-1.5 text-slate-500 hover:text-rose-500 transition-colors"
+              className="p-3 text-slate-500 hover:text-rose-500 transition-colors border border-slate-800 rounded-xl bg-slate-900/50 hover:border-rose-500/30 group"
               title="Encerrar Sessão"
-             >
-                <LogOut size={16} />
-             </button>
+            >
+              <LogOut size={20} className="group-hover:rotate-12 transition-transform" />
+            </button>
           </div>
-
-          <button 
-            onClick={() => setIsInsightsOpen(true)}
-            className="bg-transparent border border-orange-500/50 hover:bg-orange-500/10 text-orange-500 px-6 py-3 rounded-md flex items-center gap-2 font-mono text-sm uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(249,115,22,0.1)] active:scale-95"
-          >
-            <TrendingUp size={18} />
-            <span className="hidden sm:inline">[ Dashboard_Insights ]</span>
-            <span className="sm:hidden">[ Insights ]</span>
-          </button>
-          <button 
-            onClick={() => setIsEmployeeModalOpen(true)}
-            className="bg-transparent border border-blue-500/50 hover:bg-blue-500/10 text-blue-500 px-6 py-3 rounded-md flex items-center gap-2 font-mono text-sm uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(59,130,246,0.1)] active:scale-95"
-          >
-            <Users size={18} />
-            <span className="hidden sm:inline">[ Registar_Colaborador ]</span>
-            <span className="sm:hidden">[ + Colab ]</span>
-          </button>
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="bg-transparent border border-green-500/50 hover:bg-green-500/10 text-green-500 px-6 py-3 rounded-md flex items-center gap-2 font-mono text-sm uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(34,197,94,0.1)] active:scale-95"
-            id="btn-registar-falta"
-          >
-            <Plus size={18} />
-            <span className="hidden sm:inline">[ Registrar_Entrada ]</span>
-            <span className="sm:hidden">[ + Entrada ]</span>
-          </button>
         </div>
       </header>
 
