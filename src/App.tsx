@@ -312,14 +312,27 @@ export default function App() {
   const fetchData = async () => {
     if (!token) return;
     try {
-      const emps = await apiFetch('/api/employees').then(r => r.json());
-      const abs = await apiFetch('/api/absences').then(r => r.json());
-      const rep = await apiFetch('/api/reports').then(r => r.json());
-      setEmployees(emps);
-      setAbsences(abs);
-      setReport(rep);
+      const [empsRes, absRes, repRes] = await Promise.all([
+        apiFetch('/api/employees'),
+        apiFetch('/api/absences'),
+        apiFetch('/api/reports')
+      ]);
+
+      if (empsRes.ok) {
+        const data = await empsRes.json();
+        if (Array.isArray(data)) setEmployees(data);
+      }
+      if (absRes.ok) {
+        const data = await absRes.json();
+        if (Array.isArray(data)) setAbsences(data);
+      }
+      if (repRes.ok) {
+        const data = await repRes.json();
+        if (Array.isArray(data)) setReport(data);
+      }
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
+      addNotification("ERRO: Falha ao sincronizar dados com o servidor.");
     }
   };
 
