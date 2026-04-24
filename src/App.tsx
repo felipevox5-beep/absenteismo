@@ -723,7 +723,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0F1115] text-slate-100 font-sans tech-grid p-6 md:p-12 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#0F1115] text-slate-100 font-sans tech-grid p-4 md:p-12 relative overflow-x-hidden">
       {/* Sistema de Toasts (Notificações Flutuantes) */}
       <div className="fixed top-6 right-6 z-[100] flex flex-col gap-3 w-full max-w-[320px] pointer-events-none">
         <AnimatePresence>
@@ -754,12 +754,6 @@ export default function App() {
         <div className="flex items-center gap-6">
           <img src="/logos/gestorprologo.png" alt="Logo" className="h-12 drop-shadow-[0_0_10px_rgba(34,197,94,0.2)]" />
           <div>
-            <div className="flex items-center gap-2 text-green-500 mb-1">
-              <Activity size={18} className="animate-pulse" />
-              <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">Control Unit // Absenteísmo</span>
-            </div>
-            <h1 className="text-4xl font-bold tracking-tighter text-white">GESTOR PRO <span className="text-green-500">v2.0</span></h1>
-            <p className="text-slate-400 mt-1 font-mono text-xs uppercase tracking-wider">Terminal de Monitoramento de Frequência</p>
           </div>
         </div>
 
@@ -786,14 +780,16 @@ export default function App() {
             className="bg-transparent border border-orange-500/50 hover:bg-orange-500/10 text-orange-500 px-6 py-3 rounded-md flex items-center gap-2 font-mono text-sm uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(249,115,22,0.1)] active:scale-95"
           >
             <TrendingUp size={18} />
-            [ Dashboard_Insights ]
+            <span className="hidden sm:inline">[ Dashboard_Insights ]</span>
+            <span className="sm:hidden">[ Insights ]</span>
           </button>
           <button 
             onClick={() => setIsEmployeeModalOpen(true)}
             className="bg-transparent border border-blue-500/50 hover:bg-blue-500/10 text-blue-500 px-6 py-3 rounded-md flex items-center gap-2 font-mono text-sm uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(59,130,246,0.1)] active:scale-95"
           >
             <Users size={18} />
-            [ Registar_Colaborador ]
+            <span className="hidden sm:inline">[ Registar_Colaborador ]</span>
+            <span className="sm:hidden">[ + Colab ]</span>
           </button>
           <button 
             onClick={() => setIsModalOpen(true)}
@@ -801,7 +797,8 @@ export default function App() {
             id="btn-registar-falta"
           >
             <Plus size={18} />
-            [ Registrar_Entrada ]
+            <span className="hidden sm:inline">[ Registrar_Entrada ]</span>
+            <span className="sm:hidden">[ + Entrada ]</span>
           </button>
         </div>
       </header>
@@ -1089,22 +1086,418 @@ export default function App() {
         </aside>
       </main>
 
-      {/* Modals... (Simplified for this display, full implementation would continue here) */}
+      {/* =====================================================
+          SISTEMA DE MODAIS (RESPONSIVOS)
+      ===================================================== */}
+      <AnimatePresence>
+        {/* Modal de Insights */}
+        {isInsightsOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#1A1D23] rounded-2xl border border-slate-800 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl p-6 md:p-10"
+            >
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <BarChart3 className="text-orange-500" /> DASHBOARD_INSIGHTS
+                </h3>
+                <button onClick={() => setIsInsightsOpen(false)} className="text-slate-500 hover:text-white transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Colaboradores com mais Atestados */}
+                <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800">
+                  <h4 className="text-xs font-mono font-bold text-rose-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <TrendingUp size={14} /> Top_Recorrência_Atestados
+                  </h4>
+                  <div className="space-y-4">
+                    {insights.atestadoCounts.map((item, i) => (
+                      <div key={i} className="flex justify-between items-end border-b border-slate-800 pb-2">
+                        <span className="text-sm text-slate-300 truncate pr-4">{item.name}</span>
+                        <span className="text-lg font-mono font-bold text-rose-500">{item.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Colaboradores com mais Justificativas */}
+                <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800">
+                  <h4 className="text-xs font-mono font-bold text-orange-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Info size={14} /> Top_Motivos_Pessoais
+                  </h4>
+                  <div className="space-y-4">
+                    {insights.justificativaCounts.map((item, i) => (
+                      <div key={i} className="flex justify-between items-end border-b border-slate-800 pb-2">
+                        <span className="text-sm text-slate-300 truncate pr-4">{item.name}</span>
+                        <span className="text-lg font-mono font-bold text-orange-500">{item.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CIDs mais frequentes */}
+                <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800">
+                  <h4 className="text-xs font-mono font-bold text-green-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Stethoscope size={14} /> CIDs_Mais_Frequentes
+                  </h4>
+                  <div className="space-y-4">
+                    {insights.topCids.map((item, i) => (
+                      <div key={i} className="flex justify-between items-end border-b border-slate-800 pb-2">
+                        <span className="text-sm text-slate-300 uppercase">CID: {item.cid}</span>
+                        <span className="text-lg font-mono font-bold text-green-500">{item.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Motivos mais comuns */}
+                <div className="bg-slate-900/50 p-6 rounded-xl border border-slate-800">
+                  <h4 className="text-xs font-mono font-bold text-blue-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <AlertCircle size={14} /> Justificativas_Comuns
+                  </h4>
+                  <div className="space-y-4">
+                    {insights.topReasons.map((item, i) => (
+                      <div key={i} className="flex justify-between items-end border-b border-slate-800 pb-2">
+                        <span className="text-sm text-slate-300 truncate pr-4">{item.reason}</span>
+                        <span className="text-lg font-mono font-bold text-blue-500">{item.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Modal de Registro de Colaborador */}
+        {isEmployeeModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              className="bg-[#1A1D23] rounded-2xl border border-slate-800 w-full max-w-md shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Users className="text-blue-500" /> NOVO_COLABORADOR
+                </h3>
+                <button onClick={() => setIsEmployeeModalOpen(false)} className="text-slate-500 hover:text-white transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+              <form onSubmit={handleAddEmployee} className="p-6 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Nome_Completo</label>
+                  <input 
+                    type="text" 
+                    value={employeeFormData.name}
+                    onChange={(e) => setEmployeeFormData({...employeeFormData, name: e.target.value})}
+                    placeholder="DIGITE O NOME..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none focus:border-blue-500/50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Setor / Unidade</label>
+                  <input 
+                    type="text" 
+                    value={employeeFormData.sector}
+                    onChange={(e) => setEmployeeFormData({...employeeFormData, sector: e.target.value})}
+                    placeholder="EX: LOGISTICA, PRODUÇÃO..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none focus:border-blue-500/50"
+                  />
+                </div>
+                <button 
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-lg mt-4 transition-all active:scale-95"
+                >
+                  REGISTRAR_NO_SISTEMA
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Modal Principal (Registrar Falta/Atestado) */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              className="bg-[#1A1D23] rounded-2xl border border-slate-800 w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl"
+            >
+              <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2 uppercase tracking-tighter">
+                  <Plus className="text-green-500" /> REGISTRAR_OCORRÊNCIA_ABSENTEÍSMO
+                </h3>
+                <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-white transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleAddAbsence} className="p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Colaborador */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Colaborador</label>
+                    <select 
+                      value={formData.employeeId}
+                      onChange={(e) => setFormData({...formData, employeeId: e.target.value})}
+                      className="w-full bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none focus:border-green-500/50"
+                    >
+                      <option value="">SELECIONE...</option>
+                      {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                    </select>
+                  </div>
+
+                  {/* Tipo */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Tipo_Ocorrência</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button 
+                        type="button"
+                        onClick={() => setFormData({...formData, type: 'atestado'})}
+                        className={`p-3 rounded border font-mono text-[10px] font-bold transition-all ${formData.type === 'atestado' ? 'bg-rose-500/20 border-rose-500 text-rose-500' : 'bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700'}`}
+                      >
+                        ATESTADO_MÉDICO
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setFormData({...formData, type: 'motivo_pessoal'})}
+                        className={`p-3 rounded border font-mono text-[10px] font-bold transition-all ${formData.type === 'motivo_pessoal' ? 'bg-orange-500/20 border-orange-500 text-orange-500' : 'bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700'}`}
+                      >
+                        MOTIVO_PESSOAL
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Campos Dinâmicos */}
+                <AnimatePresence mode="wait">
+                  {formData.type === 'atestado' ? (
+                    <motion.div 
+                      key="atestado"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-6"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Código_CID-10</label>
+                          <div className="flex gap-2">
+                            <input 
+                              type="text" 
+                              value={formData.cid}
+                              onChange={(e) => setFormData({...formData, cid: e.target.value.toUpperCase()})}
+                              onBlur={lookupCid}
+                              placeholder="EX: Z00, M54..."
+                              className="flex-1 bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none focus:border-rose-500/50"
+                            />
+                            <div className="w-12 h-12 bg-slate-800 border border-slate-700 rounded flex items-center justify-center text-rose-500">
+                              {isAiLoading ? <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin"></div> : <Search size={18} />}
+                            </div>
+                          </div>
+                          {cidDescription && <p className="text-[10px] font-mono text-green-500 italic uppercase tracking-tighter">{cidDescription}</p>}
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Data_Emissão</label>
+                          <input 
+                            type="date" 
+                            value={formData.date}
+                            onChange={(e) => setFormData({...formData, date: e.target.value})}
+                            className="w-full bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Upload de Atestado */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Anexo_Digital (IMAGEM/PDF)</label>
+                        <div 
+                          onClick={() => fileInputRef.current?.click()}
+                          className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-all cursor-pointer ${selectedFile ? 'border-green-500/50 bg-green-500/5' : 'border-slate-800 hover:border-slate-700 bg-slate-900/50'}`}
+                        >
+                          <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                            className="hidden" 
+                            accept="image/*,application/pdf"
+                          />
+                          {selectedFile ? (
+                            <>
+                              <CheckCircle2 size={32} className="text-green-500 mb-2" />
+                              <span className="text-xs text-white font-bold">{selectedFile.name}</span>
+                              <button 
+                                type="button"
+                                onClick={verifyAttachment}
+                                disabled={isVerifyingFile}
+                                className="mt-4 bg-green-500 hover:bg-green-400 text-slate-950 px-4 py-1.5 rounded text-[10px] font-bold flex items-center gap-2"
+                              >
+                                {isVerifyingFile ? <div className="w-3 h-3 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div> : <FileSearch size={14} />}
+                                ESCANEAR_COM_IA
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <Paperclip size={32} className="text-slate-600 mb-2" />
+                              <span className="text-xs text-slate-500 font-mono">ARRASTE OU CLIQUE PARA ANEXAR</span>
+                            </>
+                          )}
+                        </div>
+
+                        {verificationError && (
+                          <div className="mt-2 p-3 bg-rose-500/10 border border-rose-500/50 rounded flex items-center gap-2 text-rose-500 text-[10px] font-mono">
+                            <ShieldAlert size={14} /> {verificationError}
+                          </div>
+                        )}
+                        {verificationSuccess && (
+                          <div className="mt-2 p-3 bg-green-500/10 border border-green-500/50 rounded flex items-center gap-2 text-green-500 text-[10px] font-mono">
+                            <ShieldCheck size={14} /> {verificationSuccess}
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div 
+                      key="pessoal"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-6"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Justificativa_Principal</label>
+                          <input 
+                            type="text" 
+                            value={formData.reason}
+                            onChange={(e) => setFormData({...formData, reason: e.target.value})}
+                            placeholder="EX: PROBLEMAS FAMILIARES..."
+                            className="w-full bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none focus:border-orange-500/50"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Data_Ocorrência</label>
+                          <input 
+                            type="date" 
+                            value={formData.date}
+                            onChange={(e) => setFormData({...formData, date: e.target.value})}
+                            className="w-full bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none"
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="pt-4 border-t border-slate-800 flex justify-end gap-4">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-6 py-3 text-slate-400 font-mono text-xs uppercase hover:text-white transition-colors"
+                  >
+                    CANCELAR
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-green-600 hover:bg-green-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-bold px-8 py-3 rounded-lg flex items-center gap-2 transition-all active:scale-95 shadow-[0_0_20px_rgba(34,197,94,0.2)]"
+                  >
+                    {isSubmitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <CheckCircle2 size={18} />}
+                    SALVAR_REGISTRO
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Modal de Histórico do Colaborador */}
+        {isHistoryModalOpen && historyEmployee && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#1A1D23] rounded-2xl w-full max-w-2xl border border-slate-800 shadow-2xl flex flex-col max-h-[85vh]"
+            >
+              <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/10 rounded-full text-blue-500">
+                    <UserIcon size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-white">{historyEmployee.name}</h3>
+                    <p className="text-slate-500 text-[10px] font-mono mt-1 uppercase">Setor: {historyEmployee.sector}</p>
+                  </div>
+                </div>
+                <button onClick={() => setIsHistoryModalOpen(false)} className="text-slate-500 hover:text-white transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto space-y-4">
+                {absences
+                  .filter(a => a.employeeId === historyEmployee.id)
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .map(abs => (
+                  <div key={abs.id} className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl group hover:border-slate-700 transition-all">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono font-bold text-slate-500">{new Date(abs.date).toLocaleDateString('pt-BR')}</span>
+                        <span className={`text-[8px] font-mono font-bold px-2 py-0.5 rounded border uppercase ${abs.type === 'atestado' ? 'bg-rose-500/10 text-rose-500 border-rose-500/50' : 'bg-orange-500/10 text-orange-500 border-orange-500/50'}`}>
+                          {abs.type.replace('_', ' ')}
+                        </span>
+                      </div>
+                      {abs.cid && <span className="text-[8px] font-mono font-bold text-green-500 uppercase">CID: {abs.cid}</span>}
+                    </div>
+                    <p className="text-xs text-slate-300 font-mono leading-relaxed">
+                      {abs.reason || 'SEM DESCRIÇÃO.'}
+                    </p>
+                  </div>
+                ))}
+
+                {absences.filter(a => a.employeeId === historyEmployee.id).length === 0 && (
+                  <div className="text-center py-20 opacity-30 flex flex-col items-center gap-4">
+                    <FileSearch size={48} className="text-slate-600" />
+                    <span className="text-sm font-mono uppercase tracking-[0.3em]">SEM REGISTROS</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 bg-slate-900/50 border-t border-slate-800 flex justify-between items-center">
+                <div className="flex gap-6">
+                  <div className="flex flex-col">
+                    <span className="text-[8px] text-slate-500 uppercase font-mono tracking-widest">Total</span>
+                    <span className="text-xl font-mono font-bold text-white">{absences.filter(a => a.employeeId === historyEmployee.id).length}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[8px] text-slate-500 uppercase font-mono tracking-widest">Atestados</span>
+                    <span className="text-xl font-mono font-bold text-rose-500">{absences.filter(a => a.employeeId === historyEmployee.id && a.type === 'atestado').length}</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsHistoryModalOpen(false)}
+                  className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded text-[10px] font-mono font-bold uppercase tracking-widest transition-all"
+                >
+                  FECHAR
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
       
       {/* Footer */}
-      <footer className="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-600 font-mono text-[10px] uppercase tracking-widest">
-        <div>GESTOR PRO // KERNEL VERSION 2.0.4 // STATUS: SECURE</div>
-        <div className="flex items-center gap-6">
-          <span className="flex items-center gap-2">
-            <ShieldCheck size={14} className="text-green-500" />
-            Encryption_Active
-          </span>
-          <span className="flex items-center gap-2">
-            <Cpu size={14} className="text-blue-500" />
-            AI_Vision_Engine_On
-          </span>
-        </div>
-        <div>© 2026 CTDI BRASIL // DEPT_TECNOLOGIA</div>
+      <footer className="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-800 flex justify-center text-slate-600 font-mono text-[10px] uppercase tracking-widest">
+        <div>SISTEMA DE GESTÃO DE ABSENTEÍSMO</div>
       </footer>
     </div>
   );
