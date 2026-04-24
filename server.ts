@@ -32,38 +32,68 @@ async function startServer() {
     }
 
     try {
-      // Tenta encontrar na tabela User (dump compatibility) ou SystemUser (nativo)
-      let foundUser = await prisma.user.findUnique({ where: { email } });
+      // 1. Tenta encontrar na tabela SystemUser (Nativo/Novo) primeiro
+      let systemUser = await prisma.systemUser.findUnique({ where: { email } });
       
-      if (!foundUser) {
-        return res.status(401).json({ error: 'Credenciais inválidas' });
+      if (systemUser) {
+        const isPasswordValid = systemUser.passwordHash ? await comparePassword(password, systemUser.passwordHash) : false;
+        
+        if (!isPasswordValid) {
+          return res.status(401).json({ error: 'Credenciais inválidas' });
+        }
+
+        const authUser: AuthUser = {
+          id: systemUser.id,
+          username: systemUser.username,
+          email: systemUser.email,
+          role: systemUser.role as any,
+          employeeId: systemUser.employeeId || undefined
+        };
+
+        const token = generateToken(authUser);
+        return res.json({ 
+          token, 
+          user: { 
+            id: systemUser.id, 
+            name: systemUser.username, 
+            email: systemUser.email, 
+            role: systemUser.role 
+          } 
+        });
       }
 
-      // Verificação de senha
-      const isPasswordValid = foundUser.password ? await comparePassword(password, foundUser.password) : false;
+      // 2. Fallback para tabela User (Dump Compatibility) se não achar no SystemUser
+      let legacyUser = await prisma.user.findUnique({ where: { email } });
       
-      // Fallback para senha em texto plano se o hash falhar (apenas para compatibilidade inicial do dump se necessário)
-      if (!isPasswordValid && password !== foundUser.password) {
-        return res.status(401).json({ error: 'Credenciais inválidas' });
+      if (legacyUser) {
+        // Tenta comparar com bcrypt, se falhar tenta texto plano
+        let isPasswordValid = legacyUser.password ? await comparePassword(password, legacyUser.password) : false;
+        
+        if (!isPasswordValid && password !== legacyUser.password) {
+          return res.status(401).json({ error: 'Credenciais inválidas' });
+        }
+
+        const authUser: AuthUser = {
+          id: 0,
+          username: legacyUser.displayName || legacyUser.email,
+          email: legacyUser.email,
+          role: (legacyUser.role === 'Admin' || legacyUser.role === 'Administrador') ? 'admin' : 'user'
+        };
+
+        const token = generateToken(authUser);
+        return res.json({ 
+          token, 
+          user: { 
+            id: legacyUser.id, 
+            name: legacyUser.displayName, 
+            email: legacyUser.email, 
+            role: legacyUser.role 
+          } 
+        });
       }
 
-      const authUser: AuthUser = {
-        id: 0, // Prisma User table uses string IDs
-        username: foundUser.displayName || foundUser.email,
-        email: foundUser.email,
-        role: (foundUser.role === 'Admin' || foundUser.role === 'Administrador') ? 'admin' : 'user'
-      };
+      return res.status(401).json({ error: 'Credenciais inválidas' });
 
-      const token = generateToken(authUser);
-      res.json({ 
-        token, 
-        user: { 
-          id: foundUser.id, 
-          name: foundUser.displayName, 
-          email: foundUser.email, 
-          role: foundUser.role 
-        } 
-      });
     } catch (error) {
       console.error('Erro no login:', error);
       res.status(500).json({ error: 'Erro interno no servidor' });
