@@ -68,6 +68,13 @@ function LoginView({ onLogin }: { onLogin: (token: string, user: any) => void })
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -172,11 +179,7 @@ function LoginView({ onLogin }: { onLogin: (token: string, user: any) => void })
           </button>
         </form>
 
-        <div className="mt-10 pt-6 border-t border-slate-800/50 text-center">
-          <p className="text-[9px] font-mono text-slate-600 uppercase tracking-widest">
-            Protocolo de Segurança Ativo // Criptografia RSA-2048
-          </p>
-        </div>
+
       </motion.div>
     </div>
   );
@@ -204,7 +207,7 @@ export default function App() {
     setNotifications(prev => [{ id, text }, ...prev].slice(0, 5));
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 5000);
+    }, 10000);
   };
   
   // Form state
@@ -225,6 +228,21 @@ export default function App() {
   const [isVerifyingFile, setIsVerifyingFile] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [verificationSuccess, setVerificationSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (verificationError) {
+      const timer = setTimeout(() => setVerificationError(null), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [verificationError]);
+
+  useEffect(() => {
+    if (verificationSuccess) {
+      const timer = setTimeout(() => setVerificationSuccess(null), 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [verificationSuccess]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [logFilterStart, setLogFilterStart] = useState('');
