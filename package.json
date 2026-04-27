@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
+    "dev:sqlite": "npx prisma generate --schema=prisma/schema.sqlite.prisma && npx prisma db push --schema=prisma/schema.sqlite.prisma && npx tsx prisma/seed.ts && tsx server.ts",
     "start": "tsx server.ts",
     "build": "vite build",
     "preview": "vite preview",

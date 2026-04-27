@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Sector {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  employees Employee[]
+  @@map("sectors")
+}
+
+model Employee {
+  id        Int     @id @default(autoincrement())
+  name      String
+  email     String?
+  sectorId  Int?    @map("sector_id")
+  sector    String?
+  status    String  @default("ativo")
+  hireDate  DateTime? @map("hire_date")
+  phone     String?
+  document  String? @unique
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  sectorRel        Sector?                  @relation(fields: [sectorId], references: [id])
+  absences         Absence[]
+  systemUser       SystemUser?
+  @@map("employees")
+}
+
+model Absence {
+  id                 Int      @id @default(autoincrement())
+  employeeId         Int      @map("employee_id")
+  type               String?
+  reason             String?
+  cid                String?
+  date               DateTime
+  atestadoFilename   String?  @map("atestado_filename")
+  status             String   @default("registrado")
+  employee         Employee @relation(fields: [employeeId], references: [id])
+  @@map("absences")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  uid           String    @unique
+  displayName   String?
+  email         String    @unique
+  photoURL      String?
+  role          String    @default("Usuário Comum")
+  password      String?
+  company       String?
+  blocked       Boolean   @default(false)
+  status        String    @default("Pendente")
+  createdAt     DateTime  @default(now())
+  @@map("User")
+}
+
+model SystemUser {
+  id        Int     @id @default(autoincrement())
+  username  String  @unique
+  email     String  @unique
+  passwordHash String? @map("password_hash")
+  employeeId Int?   @unique @map("employee_id")
+  role      String  @default("user")
+  status    String  @default("ativo")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  employee Employee? @relation(fields: [employeeId], references: [id])
+  @@map("system_users")
+}

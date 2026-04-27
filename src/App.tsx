@@ -1488,6 +1488,95 @@ export default function App() {
             </motion.div>
           </div>
         )}
+
+        {/* Modal de Detalhamento dos Cards */}
+        {viewingDetails && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#1A1D23] rounded-2xl w-full max-w-3xl border border-slate-800 shadow-2xl flex flex-col max-h-[85vh]"
+            >
+              <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${viewingDetails === 'employees' ? 'bg-blue-500/10 text-blue-500' : viewingDetails === 'atestados' ? 'bg-rose-500/10 text-rose-500' : 'bg-orange-500/10 text-orange-500'}`}>
+                    {viewingDetails === 'employees' ? <Users size={20} /> : viewingDetails === 'atestados' ? <FileText size={20} /> : <Info size={20} />}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-mono font-bold uppercase tracking-widest text-white">
+                      {viewingDetails === 'employees' ? 'LISTAGEM // COLABORADORES_ATIVOS' : viewingDetails === 'atestados' ? 'REGISTROS // ATESTADOS_MÉDICOS' : 'REGISTROS // MOTIVOS_PESSOAIS'}
+                    </h3>
+                    <p className="text-slate-500 text-[10px] font-mono mt-1 uppercase">Total de {viewingDetails === 'employees' ? employees.length : viewingDetails === 'atestados' ? absences.filter(a => a.type === 'atestado').length : absences.filter(a => a.type === 'motivo_pessoal').length} entradas localizadas</p>
+                  </div>
+                </div>
+                <button onClick={() => setViewingDetails(null)} className="text-slate-500 hover:text-white transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto space-y-3">
+                {viewingDetails === 'employees' ? (
+                  employees.sort((a, b) => a.name.localeCompare(b.name)).map(emp => (
+                    <div key={emp.id} className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-400">
+                          {emp.id.toString().padStart(2, '0')}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-white uppercase">{emp.name}</p>
+                          <p className="text-[10px] text-slate-500 font-mono uppercase">{emp.sector}</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          const repItem = report.find(r => r.id === emp.id);
+                          if (repItem) {
+                            setHistoryEmployee(repItem);
+                            setIsHistoryModalOpen(true);
+                          }
+                        }}
+                        className="text-[10px] font-mono font-bold text-blue-500 hover:underline uppercase"
+                      >
+                        [ VER_HISTÓRICO ]
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  absences
+                    .filter(a => a.type === (viewingDetails === 'atestados' ? 'atestado' : 'motivo_pessoal'))
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .map(abs => {
+                      const emp = employees.find(e => e.id === abs.employeeId);
+                      return (
+                        <div key={abs.id} className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <p className="text-sm font-bold text-white uppercase">{emp?.name || 'DESCONHECIDO'}</p>
+                              <p className="text-[10px] text-slate-500 font-mono uppercase">{new Date(abs.date).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                            <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border uppercase ${abs.type === 'atestado' ? 'bg-rose-500/10 text-rose-500 border-rose-500/50' : 'bg-orange-500/10 text-orange-500 border-orange-500/50'}`}>
+                              {abs.type === 'atestado' ? `CID: ${abs.cid || 'N/A'}` : 'MOTIVO PESSOAL'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 font-mono italic">"{abs.reason || 'SEM DESCRIÇÃO ADICIONAL.'}"</p>
+                        </div>
+                      );
+                    })
+                )}
+              </div>
+
+              <div className="p-6 bg-slate-900/50 border-t border-slate-800 flex justify-end">
+                <button 
+                  onClick={() => setViewingDetails(null)}
+                  className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded text-[10px] font-mono font-bold uppercase tracking-widest transition-all"
+                >
+                  FECHAR
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </AnimatePresence>
       
       {/* Footer */}
