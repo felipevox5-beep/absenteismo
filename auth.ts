@@ -13,7 +13,11 @@ export interface AuthUser {
   id: number;
   username: string;
   email: string;
+<<<<<<< HEAD
   role: 'admin' | 'manager' | 'user' | 'viewer';
+=======
+  role: 'MASTER' | 'COMUM' | 'admin' | 'user'; // Including old ones for compatibility during migration
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
   employeeId?: number;
 }
 

@@ -101,6 +101,7 @@ model Absence {
   cidId              Int?     @map("cid_id")
   cid                String?  @db.VarChar(20)
   date               DateTime @db.Date
+  time               String?  @db.VarChar(10)
   endDate            DateTime? @map("end_date") @db.Date
   durationDays       Int?     @map("duration_days")
   atestadoFilename   String?  @db.VarChar(255) @map("atestado_filename")
@@ -241,8 +242,8 @@ model SystemUser {
   email     String  @unique @db.VarChar(150)
   passwordHash String? @db.VarChar(255) @map("password_hash")
   employeeId Int?   @unique @map("employee_id")
-  role      String  @default("user") @db.VarChar(50)
-  status    String  @default("ativo") @db.VarChar(50)
+  role      String  @default("COMUM") @db.VarChar(50)
+  status    String  @default("ATIVO") @db.VarChar(50)
   lastLogin DateTime? @map("last_login")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

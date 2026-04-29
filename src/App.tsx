@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import { 
   Users, 
   FileText, 
@@ -30,9 +29,11 @@ import {
   Mail,
   Eye,
   EyeOff,
-  LogOut
+  LogOut,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { LoginView } from './components/LoginView';
+import { UserManagement } from './components/UserManagement';
 
 interface Employee {
   id: number;
@@ -47,6 +48,7 @@ interface Absence {
   reason: string;
   cid?: string;
   date: string;
+  time?: string;
   atestadoName?: string;
   createdAt: string;
 }
@@ -58,132 +60,8 @@ interface ReportItem extends Employee {
 }
 
 // =====================================================
-// COMPONENTE DE LOGIN (PREMIUM)
+// APP PRINCIPAL
 // =====================================================
-
-function LoginView({ onLogin }: { onLogin: (token: string, user: any) => void }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => setError(null), 10000);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Falha na autenticação');
-      
-      onLogin(data.token, data.user);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-[#0F1115] flex items-center justify-center p-4 relative overflow-hidden tech-grid">
-      {/* Background elements */}
-      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-green-500/10 blur-[120px] rounded-full"></div>
-      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-blue-500/10 blur-[120px] rounded-full"></div>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-[420px] bg-white border border-slate-200 rounded-3xl p-10 shadow-[0_30px_60px_rgba(0,0,0,0.3)] relative z-10"
-      >
-        <div className="flex flex-col items-center mb-10">
-          <img src="/logos/gestorprologo.png" alt="Gestor Pro" className="h-20" />
-        </div>
-
-        {error && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mb-6 p-3 bg-rose-500/10 border border-rose-500/50 rounded-lg flex items-center gap-3 text-rose-500 text-xs font-mono"
-          >
-            <ShieldAlert size={16} />
-            {error}
-          </motion.div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <Mail size={12} className="text-slate-300" />
-              Email
-            </label>
-            <input 
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="seu@email.com"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-900 font-mono text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/10 transition-all placeholder:text-slate-300"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <Lock size={12} className="text-slate-300" />
-              Senha
-            </label>
-            <div className="relative">
-              <input 
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="••••••••"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-slate-900 font-mono text-sm outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500/10 transition-all placeholder:text-slate-300"
-              />
-              <button 
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          <button 
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-slate-900 hover:bg-black disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg mt-8"
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <>
-                <ShieldCheck size={20} />
-                <span>ENTRAR NO SISTEMA</span>
-              </>
-            )}
-          </button>
-        </form>
-
-
-      </motion.div>
-    </div>
-  );
-}
 
 // =====================================================
 // APP PRINCIPAL
@@ -200,6 +78,7 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
   const [isInsightsOpen, setIsInsightsOpen] = useState(false);
+  const [currentView, setCurrentView] = useState<'dashboard' | 'admin'>('dashboard');
   const [notifications, setNotifications] = useState<{id: string, text: string}[]>([]);
 
   const addNotification = (text: string) => {
@@ -216,7 +95,8 @@ export default function App() {
     type: 'atestado' as 'atestado' | 'motivo_pessoal',
     reason: '',
     cid: '',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    time: ''
   });
 
   const [employeeFormData, setEmployeeFormData] = useState({
@@ -436,6 +316,7 @@ export default function App() {
     setCidDescription('Identificando...');
     
     try {
+<<<<<<< HEAD
       const apiKey = (process.env as any).GEMINI_API_KEY;
       if (!apiKey || apiKey === 'undefined') {
          throw new Error("Chave do Gemini não configurada.");
@@ -457,6 +338,17 @@ export default function App() {
       });
       
       const result = JSON.parse(response.text || '{}');
+=======
+      const res = await apiFetch('/api/ai/cid-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cid: formData.cid })
+      });
+      
+      if (!res.ok) throw new Error('Erro ao buscar CID');
+      
+      const result = await res.json();
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
       setCidDescription(result.description || 'CID não identificado');
     } catch (error) {
       console.error('Erro no lookup de AI:', error);
@@ -466,6 +358,7 @@ export default function App() {
     }
   };
 
+<<<<<<< HEAD
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -475,6 +368,8 @@ export default function App() {
     });
   };
 
+=======
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
   const verifyAttachment = async () => {
     if (!selectedFile || !formData.employeeId) {
       addNotification("ALERTA: Selecione um colaborador e um arquivo antes de escanear.");
@@ -507,6 +402,7 @@ export default function App() {
     // 2. AI Content Verification (Vision + CID match)
     if (selectedFile.type.startsWith('image/')) {
       try {
+<<<<<<< HEAD
         const apiKey = (process.env as any).GEMINI_API_KEY;
         if (!apiKey || apiKey === 'undefined') {
            throw new Error("Chave do Gemini não configurada.");
@@ -550,6 +446,19 @@ export default function App() {
         });
 
         const result = JSON.parse(response.text || '{}');
+=======
+        const data = new FormData();
+        data.append('file', selectedFile);
+        data.append('employeeName', employee.name);
+        data.append('cid', formData.cid || '');
+
+        const res = await apiFetch('/api/ai/verify-attachment', {
+          method: 'POST',
+          body: data
+        });
+
+        if (!res.ok) throw new Error('Falha ao processar análise no servidor');
+        const result = await res.json();
         
         if (result.isLegit === false) {
           setVerificationError(`ALERTA_IA: O documento não parece ser um atestado médico válido. ${result.message || ''}`);
@@ -596,6 +505,7 @@ export default function App() {
     data.append('reason', formData.reason);
     data.append('cid', formData.cid);
     data.append('date', formData.date);
+    data.append('time', formData.time);
     if (selectedFile) {
       data.append('atestado', selectedFile);
     }
@@ -642,7 +552,12 @@ export default function App() {
       type: 'atestado',
       reason: '',
       cid: '',
+<<<<<<< HEAD
       date: new Date().toISOString().split('T')[0]
+=======
+      date: new Date().toISOString().split('T')[0],
+      time: ''
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
     });
     setCidDescription('');
     setSelectedFile(null);
@@ -664,7 +579,11 @@ export default function App() {
     );
     
     const csvContent = [headers, ...rows].join('\n');
+<<<<<<< HEAD
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+=======
+    const blob = new Blob(["\uFEFF", csvContent], { type: 'text/csv;charset=utf-8;' });
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
@@ -677,6 +596,7 @@ export default function App() {
   };
 
   const exportReportCSV = () => {
+<<<<<<< HEAD
     const dataToExport = report.map(item => ({
       ID: item.id,
       Nome: item.name,
@@ -689,6 +609,70 @@ export default function App() {
     exportToCSV(dataToExport, 'relatorio_absenteismo');
   };
 
+=======
+    const dataToExport = [...report]
+      .sort((a, b) => (a.sector || '').localeCompare(b.sector || ''))
+      .map(item => {
+        let riskLabel = 'NORMAL';
+        if (item.atestados > 10) riskLabel = 'RISCO';
+        else if (item.atestados > 5) riskLabel = 'INTERMEDIARIO';
+
+        return {
+          ID: item.id,
+          IDENTIFICAÇÃO: item.name,
+          SETOR: item.sector || '-',
+          ENTRADAS: item.totalAbsences,
+          ATS: item.atestados,
+          MP: item.motivosPessoais,
+          NÍVEL_RISCO: riskLabel
+        };
+      });
+    exportToCSV(dataToExport, 'relatorio_absenteismo');
+  };
+
+  const exportEmployeesCSV = () => {
+    const dataToExport = employees.map(emp => ({
+      ID: emp.id,
+      Nome: emp.name,
+      Setor: emp.sector || '-',
+      Email: emp.email || '-',
+      Status: emp.status
+    }));
+    exportToCSV(dataToExport, 'lista_colaboradores');
+  };
+
+  const exportAtestadosCSV = () => {
+    const filtered = absences.filter(a => a.type === 'atestado');
+    const dataToExport = filtered.map(abs => {
+      const emp = employees.find(e => e.id === abs.employeeId);
+      return {
+        ID_Ocorrencia: abs.id,
+        Colaborador: emp?.name || 'DESCONHECIDO',
+        Data: new Date(abs.date).toLocaleDateString('pt-BR'),
+        Hora: abs.time || '-',
+        CID: abs.cid || '-',
+        Descricao: abs.reason || '-'
+      };
+    });
+    exportToCSV(dataToExport, 'relatorio_atestados');
+  };
+
+  const exportJustificativasCSV = () => {
+    const filtered = absences.filter(a => a.type === 'motivo_pessoal');
+    const dataToExport = filtered.map(abs => {
+      const emp = employees.find(e => e.id === abs.employeeId);
+      return {
+        ID_Ocorrencia: abs.id,
+        Colaborador: emp?.name || 'DESCONHECIDO',
+        Data: new Date(abs.date).toLocaleDateString('pt-BR'),
+        Hora: abs.time || '-',
+        Motivo: abs.reason || '-'
+      };
+    });
+    exportToCSV(dataToExport, 'relatorio_justificativas');
+  };
+
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
   const exportLogsCSV = () => {
     const start = logFilterStart ? new Date(logFilterStart + 'T00:00:00').getTime() : 0;
     const end = logFilterEnd ? new Date(logFilterEnd + 'T23:59:59').getTime() : Infinity;
@@ -712,6 +696,10 @@ export default function App() {
         Tipo: abs.type === 'atestado' ? 'ATESTADO' : 'PESSOAL',
         CID: abs.cid || '-',
         Justificativa: abs.reason || '',
+<<<<<<< HEAD
+=======
+        Hora: abs.time || '-',
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
         Protocolo_ID: abs.id
       };
     });
@@ -767,6 +755,7 @@ export default function App() {
               <span className="hidden sm:inline">[ Insights ]</span>
             </button>
             
+<<<<<<< HEAD
             <button 
               onClick={() => setIsEmployeeModalOpen(true)}
               className="bg-transparent border border-blue-500/50 hover:bg-blue-500/10 text-blue-500 px-4 md:px-6 py-2.5 md:py-3 rounded-md flex items-center gap-2 font-mono text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95"
@@ -783,6 +772,38 @@ export default function App() {
               <Plus size={18} />
               <span className="hidden sm:inline">[ + Entrada ]</span>
             </button>
+=======
+            {(user?.role === 'MASTER' || user?.role === 'admin') && (
+              <button 
+                onClick={() => setCurrentView(currentView === 'dashboard' ? 'admin' : 'dashboard')}
+                className={`border ${currentView === 'admin' ? 'bg-blue-500 border-blue-500 text-white' : 'bg-transparent border-blue-500/50 text-blue-500 hover:bg-blue-500/10'} px-4 md:px-6 py-2.5 md:py-3 rounded-md flex items-center gap-2 font-mono text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95`}
+              >
+                <ShieldCheck size={18} />
+                <span className="hidden sm:inline">{currentView === 'dashboard' ? '[ Admin ]' : '[ Dashboard ]'}</span>
+              </button>
+            )}
+
+            {currentView === 'dashboard' && (
+              <>
+                <button 
+                  onClick={() => setIsEmployeeModalOpen(true)}
+                  className="bg-transparent border border-blue-500/50 hover:bg-blue-500/10 text-blue-500 px-4 md:px-6 py-2.5 md:py-3 rounded-md flex items-center gap-2 font-mono text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95"
+                >
+                  <Users size={18} />
+                  <span className="hidden sm:inline">[ + Colaborador ]</span>
+                </button>
+
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-transparent border border-green-500/50 hover:bg-green-500/10 text-green-500 px-4 md:px-6 py-2.5 md:py-3 rounded-md flex items-center gap-2 font-mono text-xs md:text-sm uppercase tracking-widest transition-all active:scale-95 shadow-[0_0_15px_rgba(34,197,94,0.1)]"
+                  id="btn-registar-falta"
+                >
+                  <Plus size={18} />
+                  <span className="hidden sm:inline">[ + Entrada ]</span>
+                </button>
+              </>
+            )}
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
           </div>
 
           {/* Lado Direito: Botão Sair */}
@@ -820,7 +841,15 @@ export default function App() {
         </motion.div>
       )}
 
+<<<<<<< HEAD
       <main className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+=======
+      <main className="max-w-7xl mx-auto">
+        {currentView === 'admin' ? (
+          <UserManagement token={token!} onNotification={addNotification} />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
         
         {/* Dash Cards */}
         <div className="lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
@@ -929,12 +958,31 @@ export default function App() {
                         <div className="flex-1 flex items-center gap-2">
                           <div className="flex-1 bg-slate-800 h-1.5 rounded-full overflow-hidden">
                             <div 
+<<<<<<< HEAD
                               className={`h-full ${item.totalAbsences > 3 ? 'bg-rose-600 shadow-[0_0_8px_rgba(225,29,72,0.4)]' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]'}`} 
                               style={{ width: `${Math.min(item.totalAbsences * 10, 100)}%` }}
                             />
                           </div>
                           <span className={`text-[10px] font-bold ${item.totalAbsences > 3 ? 'text-rose-500' : 'text-green-500'}`}>
                             {item.totalAbsences > 3 ? 'CRIT' : 'NORM'}
+=======
+                              className={`h-full shadow-[0_0_8px_rgba(0,0,0,0.4)] ${
+                                item.atestados > 10 ? 'bg-rose-600' : 
+                                item.atestados > 5 ? 'bg-orange-500' : 
+                                'bg-green-500'
+                              }`} 
+                              style={{ width: `${Math.min(item.atestados * 10, 100)}%` }}
+                            />
+                          </div>
+                          <span className={`text-[10px] font-bold ${
+                            item.atestados > 10 ? 'text-rose-500' : 
+                            item.atestados > 5 ? 'text-orange-500' : 
+                            'text-green-500'
+                          }`}>
+                            {item.atestados > 10 ? 'RISCO' : 
+                             item.atestados > 5 ? 'INTER' : 
+                             'NORM'}
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -1038,9 +1086,16 @@ export default function App() {
                 const person = employees.find(e => e.id === abs.employeeId);
                 return (
                   <div key={abs.id} className="relative pl-4 border-l border-slate-800 group hover:border-green-500/50 transition-colors">
+<<<<<<< HEAD
                     <div className="flex justify-between items-start mb-1">
                       <span className="text-[10px] font-mono text-slate-500">{new Date(abs.date).toLocaleDateString('pt-BR')}</span>
                       <div className="flex items-center gap-2">
+=======
+                    <div className="text-[10px] font-mono text-slate-500 mb-0.5">{new Date(abs.date).toLocaleDateString('pt-BR')}</div>
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="text-xs font-bold text-white uppercase truncate pr-2">{person?.name || '---'}</div>
+                      <div className="flex items-center gap-2 shrink-0">
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                         <span className={`text-[9px] font-mono px-1.5 rounded ${abs.type === 'atestado' ? 'text-rose-500 bg-rose-500/10' : 'text-orange-500 bg-orange-500/10'}`}>
                           {abs.type === 'atestado' ? 'ATS' : 'ADM'}
                         </span>
@@ -1052,9 +1107,15 @@ export default function App() {
                         </button>
                       </div>
                     </div>
+<<<<<<< HEAD
                     <div className="text-xs font-bold text-white uppercase">{person?.name || '---'}</div>
                     <div className="text-[10px] text-slate-500 font-mono mt-1">
                       {abs.type === 'atestado' ? `CID: ${abs.cid || 'N/A'}` : `MOTIVO: ${abs.reason || '---'}`}
+=======
+                    <div className="text-[10px] text-slate-500 font-mono mt-1">
+                      {abs.type === 'atestado' ? `CID: ${abs.cid || 'N/A'}` : `MOTIVO: ${abs.reason || '---'}`}
+                      {abs.time && <span className="ml-2 text-blue-400">🕒 {abs.time}</span>}
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                     </div>
 
                     {/* Confirmação de exclusão do log */}
@@ -1067,9 +1128,31 @@ export default function App() {
                           className="absolute inset-0 bg-slate-900/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded border border-rose-500/30 p-2"
                         >
                           <span className="text-[8px] font-bold text-rose-500 uppercase mb-2">Excluir Log #{abs.id}?</span>
+<<<<<<< HEAD
                           <div className="flex gap-2">
                             <button onClick={() => handleDeleteAbsence(abs.id)} className="text-[8px] font-bold bg-rose-500 text-white px-2 py-1 rounded">SIM</button>
                             <button onClick={() => setDeletingLogId(null)} className="text-[8px] font-bold bg-slate-700 text-white px-2 py-1 rounded">NÃO</button>
+=======
+                          <div className="flex gap-2 relative z-20">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteAbsence(abs.id);
+                              }} 
+                              className="text-[8px] font-bold bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded cursor-pointer transition-colors"
+                            >
+                              SIM
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeletingLogId(null);
+                              }} 
+                              className="text-[8px] font-bold bg-slate-700 hover:bg-slate-600 text-white px-3 py-1.5 rounded cursor-pointer transition-colors"
+                            >
+                              NÃO
+                            </button>
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                           </div>
                         </motion.div>
                       )}
@@ -1079,6 +1162,11 @@ export default function App() {
               })}
           </div>
         </aside>
+<<<<<<< HEAD
+=======
+          </div>
+        )}
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
       </main>
 
       {/* =====================================================
@@ -1282,7 +1370,11 @@ export default function App() {
                       exit={{ opacity: 0, height: 0 }}
                       className="space-y-6"
                     >
+<<<<<<< HEAD
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+=======
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                         <div className="space-y-2">
                           <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Código_CID-10</label>
                           <div className="flex gap-2">
@@ -1294,9 +1386,19 @@ export default function App() {
                               placeholder="EX: Z00, M54..."
                               className="flex-1 bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none focus:border-rose-500/50"
                             />
+<<<<<<< HEAD
                             <div className="w-12 h-12 bg-slate-800 border border-slate-700 rounded flex items-center justify-center text-rose-500">
                               {isAiLoading ? <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin"></div> : <Search size={18} />}
                             </div>
+=======
+                            <button 
+                              type="button"
+                              onClick={lookupCid}
+                              className="w-12 h-12 bg-slate-800 border border-slate-700 rounded flex items-center justify-center text-rose-500 hover:bg-slate-700 transition-colors cursor-pointer"
+                            >
+                              {isAiLoading ? <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin"></div> : <Search size={18} />}
+                            </button>
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                           </div>
                           {cidDescription && <p className="text-[10px] font-mono text-green-500 italic uppercase tracking-tighter">{cidDescription}</p>}
                         </div>
@@ -1309,11 +1411,27 @@ export default function App() {
                             className="w-full bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none"
                           />
                         </div>
+<<<<<<< HEAD
+=======
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Horário_Saída (OPCIONAL)</label>
+                          <input 
+                            type="time" 
+                            value={formData.time}
+                            onChange={(e) => setFormData({...formData, time: e.target.value})}
+                            className="w-full bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none focus:border-rose-500/50"
+                          />
+                        </div>
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                       </div>
 
                       {/* Upload de Atestado */}
                       <div className="space-y-2">
+<<<<<<< HEAD
                         <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Anexo_Digital (IMAGEM/PDF)</label>
+=======
+                        <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Anexo_Digital (IMAGEM/PDF) <span className="text-rose-500">(OBRIGATÓRIO)</span></label>
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                         <div 
                           onClick={() => fileInputRef.current?.click()}
                           className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center transition-all cursor-pointer ${selectedFile ? 'border-green-500/50 bg-green-500/5' : 'border-slate-800 hover:border-slate-700 bg-slate-900/50'}`}
@@ -1367,7 +1485,11 @@ export default function App() {
                       exit={{ opacity: 0, height: 0 }}
                       className="space-y-6"
                     >
+<<<<<<< HEAD
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+=======
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                         <div className="space-y-2">
                           <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Justificativa_Principal</label>
                           <input 
@@ -1387,6 +1509,18 @@ export default function App() {
                             className="w-full bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none"
                           />
                         </div>
+<<<<<<< HEAD
+=======
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-widest">Horário_Ocorrência</label>
+                          <input 
+                            type="time" 
+                            value={formData.time}
+                            onChange={(e) => setFormData({...formData, time: e.target.value})}
+                            className="w-full bg-slate-900 border border-slate-800 rounded p-3 text-white font-mono text-sm outline-none focus:border-orange-500/50"
+                          />
+                        </div>
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                       </div>
                     </motion.div>
                   )}
@@ -1402,7 +1536,11 @@ export default function App() {
                   </button>
                   <button 
                     type="submit"
+<<<<<<< HEAD
                     disabled={isSubmitting}
+=======
+                    disabled={isSubmitting || (formData.type === 'atestado' && !selectedFile)}
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                     className="bg-green-600 hover:bg-green-500 disabled:bg-slate-800 disabled:text-slate-600 text-white font-bold px-8 py-3 rounded-lg flex items-center gap-2 transition-all active:scale-95 shadow-[0_0_20px_rgba(34,197,94,0.2)]"
                   >
                     {isSubmitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <CheckCircle2 size={18} />}
@@ -1416,7 +1554,11 @@ export default function App() {
 
         {/* Modal de Histórico do Colaborador */}
         {isHistoryModalOpen && historyEmployee && (
+<<<<<<< HEAD
           <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+=======
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1452,6 +1594,10 @@ export default function App() {
                         </span>
                       </div>
                       {abs.cid && <span className="text-[8px] font-mono font-bold text-green-500 uppercase">CID: {abs.cid}</span>}
+<<<<<<< HEAD
+=======
+                      {abs.time && <span className="text-[8px] font-mono font-bold text-blue-400 uppercase">HORA: {abs.time}</span>}
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                     </div>
                     <p className="text-xs text-slate-300 font-mono leading-relaxed">
                       {abs.reason || 'SEM DESCRIÇÃO.'}
@@ -1510,9 +1656,28 @@ export default function App() {
                     <p className="text-slate-500 text-[10px] font-mono mt-1 uppercase">Total de {viewingDetails === 'employees' ? employees.length : viewingDetails === 'atestados' ? absences.filter(a => a.type === 'atestado').length : absences.filter(a => a.type === 'motivo_pessoal').length} entradas localizadas</p>
                   </div>
                 </div>
+<<<<<<< HEAD
                 <button onClick={() => setViewingDetails(null)} className="text-slate-500 hover:text-white transition-colors">
                   <X size={24} />
                 </button>
+=======
+                <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => {
+                      if (viewingDetails === 'employees') exportEmployeesCSV();
+                      else if (viewingDetails === 'atestados') exportAtestadosCSV();
+                      else if (viewingDetails === 'pessoais') exportJustificativasCSV();
+                    }}
+                    className={`text-slate-500 hover:text-blue-500 transition-colors flex items-center gap-2 ${!viewingDetails ? 'hidden' : ''}`}
+                    title="Exportar Dados Atuais"
+                  >
+                    <Download size={20} />
+                  </button>
+                  <button onClick={() => setViewingDetails(null)} className="text-slate-500 hover:text-white transition-colors">
+                    <X size={24} />
+                  </button>
+                </div>
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
               </div>
 
               <div className="p-6 overflow-y-auto space-y-3">
@@ -1530,11 +1695,23 @@ export default function App() {
                       </div>
                       <button 
                         onClick={() => {
+<<<<<<< HEAD
                           const repItem = report.find(r => r.id === emp.id);
                           if (repItem) {
                             setHistoryEmployee(repItem);
                             setIsHistoryModalOpen(true);
                           }
+=======
+                          setHistoryEmployee({
+                            id: emp.id,
+                            name: emp.name,
+                            sector: emp.sector || '-',
+                            totalAbsences: 0,
+                            atestados: 0,
+                            motivosPessoais: 0
+                          });
+                          setIsHistoryModalOpen(true);
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                         }}
                         className="text-[10px] font-mono font-bold text-blue-500 hover:underline uppercase"
                       >
@@ -1556,7 +1733,11 @@ export default function App() {
                               <p className="text-[10px] text-slate-500 font-mono uppercase">{new Date(abs.date).toLocaleDateString('pt-BR')}</p>
                             </div>
                             <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded border uppercase ${abs.type === 'atestado' ? 'bg-rose-500/10 text-rose-500 border-rose-500/50' : 'bg-orange-500/10 text-orange-500 border-orange-500/50'}`}>
+<<<<<<< HEAD
                               {abs.type === 'atestado' ? `CID: ${abs.cid || 'N/A'}` : 'MOTIVO PESSOAL'}
+=======
+                              {abs.type === 'atestado' ? `CID: ${abs.cid || 'N/A'}` : `PESSOAL ${abs.time ? `- ${abs.time}` : ''}`}
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
                             </span>
                           </div>
                           <p className="text-xs text-slate-400 font-mono italic">"{abs.reason || 'SEM DESCRIÇÃO ADICIONAL.'}"</p>

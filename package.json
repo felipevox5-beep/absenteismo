@@ -4,8 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+<<<<<<< HEAD
     "dev": "tsx server.ts",
     "dev:sqlite": "npx prisma generate --schema=prisma/schema.sqlite.prisma && npx prisma db push --schema=prisma/schema.sqlite.prisma && npx tsx prisma/seed.ts && tsx server.ts",
+=======
+    "dev": "tsx --watch server.ts",
+    "dev:sqlite": "npx prisma generate --schema=prisma/schema.sqlite.prisma && npx prisma db push --schema=prisma/schema.sqlite.prisma && npx tsx prisma/seed.ts && tsx --watch server.ts",
+>>>>>>> cf6a7c3 (Implementação de estrutura de usuários Master/Comum e Auditoria)
     "start": "tsx server.ts",
     "build": "vite build",
     "preview": "vite preview",

@@ -15,8 +15,8 @@ async function main() {
       username: 'Administrador',
       email: 'admin@admin.com',
       passwordHash: adminPasswordHash,
-      role: 'admin',
-      status: 'ativo',
+      role: 'MASTER',
+      status: 'ATIVO',
     },
   });
   console.log('✅ Usuário admin criado: admin@admin.com / Admin123!');
@@ -30,8 +30,8 @@ async function main() {
       username: 'Felipe',
       email: 'felipe@vox.com',
       passwordHash: felipePasswordHash,
-      role: 'admin',
-      status: 'ativo',
+      role: 'MASTER',
+      status: 'ATIVO',
     },
   });
   console.log('✅ Usuário felipe criado: felipe@vox.com / vox123');

@@ -42,6 +42,7 @@ model Absence {
   reason             String?
   cid                String?
   date               DateTime
+  time               String?
   atestadoFilename   String?  @map("atestado_filename")
   status             String   @default("registrado")
   employee         Employee @relation(fields: [employeeId], references: [id])
@@ -69,8 +70,8 @@ model SystemUser {
   email     String  @unique
   passwordHash String? @map("password_hash")
   employeeId Int?   @unique @map("employee_id")
-  role      String  @default("user")
-  status    String  @default("ativo")
+  role      String  @default("COMUM")
+  status    String  @default("ATIVO")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   employee Employee? @relation(fields: [employeeId], references: [id])
